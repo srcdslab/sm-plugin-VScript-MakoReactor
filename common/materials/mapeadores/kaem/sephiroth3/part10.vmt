@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "mapeadores\kaem\sephiroth3\Part10"
+	"$nocull" 1 
+}

@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "mapeadores\kaem\sephiroth3\Part13"
+	"$alphatest" 1
+	"$halflambert" 1
+	"$nocull" 1 
+}
