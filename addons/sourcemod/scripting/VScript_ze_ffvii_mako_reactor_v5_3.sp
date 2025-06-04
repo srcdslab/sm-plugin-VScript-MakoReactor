@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.0.0",
+	version     = "2.0.1",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -513,7 +513,7 @@ public Action Command_EndRace(int args)
 public Action ZR_OnClientInfect()
 {
 	if (!g_bValidMap)
-		return Plugin_Handled;
+		return Plugin_Continue;
 
 	if (g_bRaceEnabled && g_bRaceBlockInfect)
 		return Plugin_Handled;
@@ -524,7 +524,7 @@ public Action ZR_OnClientInfect()
 public Action ZR_OnClientRespawn()
 {
 	if (!g_bValidMap)
-		return Plugin_Handled;
+		return Plugin_Continue;
 
 	if (g_bRaceEnabled && g_bRaceBlockRespawn)
 		return Plugin_Handled;
