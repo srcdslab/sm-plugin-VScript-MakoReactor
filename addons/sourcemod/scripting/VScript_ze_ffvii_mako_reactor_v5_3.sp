@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.0.1",
+	version     = "2.0.2",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -167,7 +167,7 @@ stock bool VerifyMap()
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_mix.mp3");
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_play.mp3");
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_play2.mp3");
-	
+
 	return true;
 }
 
@@ -281,7 +281,7 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 		}
 		if (g_bPlayedZM && g_cRtd.BoolValue)
 			CPrintToChatAll("{green}[Mako Vote] {white}ZM already has been played. Starting normal vote.");
-	
+
 		g_CountdownTimer = CreateTimer(1.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		bStartVoteNextRound = false;
 	}
@@ -541,7 +541,7 @@ public Action Command_AdminStartVote(int client, int argc)
 
 	if (client == 0)
 		name = "The server";
-	else if(!GetClientName(client, name, sizeof(name))) 
+	else if (!GetClientName(client, name, sizeof(name)))
 		Format(name, sizeof(name), "Disconnected (uid:%d)", client);
 
 	if (client != 0)
@@ -576,7 +576,8 @@ public Action Command_StartVote(int args)
 
 public void Cmd_StartVote()
 {
-	int iCurrentStage = (GetCurrentStage() - DEFAULTSTAGES);
+	int iCurrentStage = GetCurrentStage();
+
 
 	if (iCurrentStage > -1)
 		g_bOnCooldown[iCurrentStage] = true;
@@ -623,7 +624,7 @@ public Action StartVote(Handle timer)
 
 public void InitiateVote()
 {
-	if(IsVoteInProgress())
+	if (IsVoteInProgress())
 	{
 		CPrintToChatAll("{green}[Mako Vote] {white}Another vote is currently in progress, retrying again in 5s.");
 		delete g_CountdownTimer;
@@ -641,15 +642,18 @@ public void InitiateVote()
 		g_StageList.GetString(i, sBuffer, sizeof(sBuffer));
 
 		bool isZombieMode = strcmp(sBuffer, "Zombie Mode") == 0;
-		bool bSkipZMStage = isZombieMode && (g_bPlayedZM || !g_cZMStageMenu.BoolValue);
+		bool bSkipZMStage = isZombieMode && (g_cRtd.BoolValue || g_bPlayedZM || !g_cZMStageMenu.BoolValue);
 
 		for (int j = 0; j <= (NUMBEROFSTAGES - 1); j++)
 		{
 			if (strcmp(sBuffer, g_sStageName[j]) == 0)
 			{
-				bool disableItem = g_bOnCooldown[j] || bSkipZMStage;
-				if (!disableItem)
-					AddMenuItem(g_VoteMenu, sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
+				// Skip ZM stage completely if RTD is enabled or other conditions
+				if (bSkipZMStage)
+					continue;
+
+				bool disableItem = g_bOnCooldown[j];
+				AddMenuItem(g_VoteMenu, sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
 			}
 		}
 	}
@@ -741,22 +745,22 @@ public int GetCurrentStage()
 	int iCurrentStage;
 	// Note: iCurrentStage is the index as "triggers" related to the stage in the adminroom config.
 
-	if (iCounterVal == 5) // Ex2
+	if (iCounterVal == 5) // Extreme 2
+		iCurrentStage = 0;
+	else if (iCounterVal == 7) // Extreme 2 (Heal + Ultima)
+		iCurrentStage = 1;
+	else if (iCounterVal == 9) // Extreme 3 (Hellz)
+		iCurrentStage = 3;
+	else if (iCounterVal == 10) // Extreme 3 (ZED)
+		iCurrentStage = 2;
+	else if (iCounterVal == 11) // Race Mode
 		iCurrentStage = 4;
-	else if (iCounterVal == 6) // ZM Mode
-		iCurrentStage = 9;
-	else if (iCounterVal == 7) // Ex2 (Heal +Ultima)
+	else if (iCounterVal == 6) // Zombie Mode
 		iCurrentStage = 5;
-	else if (iCounterVal == 9) // Ex3 (Hellz)
-		iCurrentStage = 7;
-	else if (iCounterVal == 10) // Ex3 (ZED)
+	else if (iCounterVal == 13) // Extreme 3 (NiDE)
 		iCurrentStage = 6;
-	else if (iCounterVal == 11) // Race
-		iCurrentStage = 8;
-	else if (iCounterVal == 13) // Ex3 (NiDe)
-		iCurrentStage = 10;
-	else if (iCounterVal == 14) // RMZS
-		iCurrentStage = 11;
+	else if (iCounterVal == 14) // Extreme 3 (RMZS)
+		iCurrentStage = 7;
 	else
 		iCurrentStage = -1;
 
@@ -765,13 +769,13 @@ public int GetCurrentStage()
 
 public int FindEntityByTargetname(int entity, const char[] sTargetname, const char[] sClassname)
 {
-	if(sTargetname[0] == '#') // HammerID
+	if (sTargetname[0] == '#') // HammerID
 	{
 		int HammerID = StringToInt(sTargetname[1]);
 
 		while((entity = FindEntityByClassname(entity, sClassname)) != INVALID_ENT_REFERENCE)
 		{
-			if(GetEntProp(entity, Prop_Data, "m_iHammerID") == HammerID)
+			if (GetEntProp(entity, Prop_Data, "m_iHammerID") == HammerID)
 				return entity;
 		}
 	}
@@ -782,10 +786,10 @@ public int FindEntityByTargetname(int entity, const char[] sTargetname, const ch
 
 		while((entity = FindEntityByClassname(entity, sClassname)) != INVALID_ENT_REFERENCE)
 		{
-			if(GetEntPropString(entity, Prop_Data, "m_iName", sTargetnameBuf, sizeof(sTargetnameBuf)) <= 0)
+			if (GetEntPropString(entity, Prop_Data, "m_iName", sTargetnameBuf, sizeof(sTargetnameBuf)) <= 0)
 				continue;
 
-			if(strncmp(sTargetnameBuf, sTargetname, Wildcard) == 0)
+			if (strncmp(sTargetnameBuf, sTargetname, Wildcard) == 0)
 				return entity;
 		}
 	}
