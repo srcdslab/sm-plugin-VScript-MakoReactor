@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.0.2",
+	version     = "2.0.3",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -42,6 +42,7 @@ bool g_bOnCooldown[NUMBEROFSTAGES];
 static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal + Ultima)", "Extreme 3 (ZED)", "Extreme 3 (Hellz)", "Race Mode", "Zombie Mode", "Extreme 3 (NiDE)", "Extreme 3 (RMZS)"};
 
 int g_Winnerstage;
+bool g_bFirstVote = true;
 
 Handle g_VoteMenu = null;
 ArrayList g_StageList = null;
@@ -77,6 +78,7 @@ public void OnMapStart()
 	g_bVoteFinished = true;
 	bStartVoteNextRound = false;
 	g_bPlayedZM = false;
+	g_bFirstVote = true;
 
 	for (int i = 0; i <= (NUMBEROFSTAGES - 1); i++)
 		g_bOnCooldown[i] = false;
@@ -578,6 +580,11 @@ public void Cmd_StartVote()
 {
 	int iCurrentStage = GetCurrentStage();
 
+	if (g_bFirstVote)
+	{
+		g_bOnCooldown[0] = true;
+		g_bFirstVote = false;
+	}
 
 	if (iCurrentStage > -1)
 		g_bOnCooldown[iCurrentStage] = true;
