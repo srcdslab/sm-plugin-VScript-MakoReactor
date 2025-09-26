@@ -272,7 +272,6 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 	if (!g_bValidMap)
 		return;
 
-
 	if (bStartVoteNextRound)
 	{
 		delete g_CountdownTimer;
@@ -635,19 +634,7 @@ public void Cmd_StartVote()
 {
 	int iCurrentStage = GetCurrentStage();
 
-	// Add the winning stage to cooldown queue
-	if (!IsStageOnCooldown(g_Winnerstage))
-	{
-		g_CooldownQueue.Push(g_Winnerstage);
-		LogMessage("Added stage %d (%s) to cooldown queue. New length: %d", g_Winnerstage, g_sStageName[g_Winnerstage], g_CooldownQueue.Length);
-	}
-
-	// If the limit is reached, remove the oldest stage from cooldown
-	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
-	{
-		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
-		g_CooldownQueue.Erase(0);
-	}
+	AddStageToCooldown(g_Winnerstage);
 
 	if (iCurrentStage == 5)
 		g_bPlayedZM = true;
@@ -778,19 +765,7 @@ public void Handler_VoteFinishedGeneric(Handle menu, int num_votes, int num_clie
 			g_Winnerstage = i;
 	}
 
-	// Add the winning stage to cooldown queue
-	if (!IsStageOnCooldown(g_Winnerstage))
-	{
-		g_CooldownQueue.Push(g_Winnerstage);
-		LogMessage("Added stage %d (%s) to cooldown queue. New length: %d", g_Winnerstage, g_sStageName[g_Winnerstage], g_CooldownQueue.Length);
-	}
-
-	// If the limit is reached, remove the oldest stage from cooldown
-	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
-	{
-		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
-		g_CooldownQueue.Erase(0);
-	}
+	AddStageToCooldown(g_Winnerstage);
 
 	ServerCommand("sm_stage %d", (g_Winnerstage + DEFAULTSTAGES));
 	TerminateRound();
@@ -836,6 +811,23 @@ public int GetCurrentStage()
 stock bool IsStageOnCooldown(int stageIndex)
 {
 	return g_CooldownQueue.FindValue(stageIndex) != -1;
+}
+
+stock void AddStageToCooldown(int stageIndex)
+{
+	// Add the winning stage to cooldown queue
+	if (!IsStageOnCooldown(stageIndex))
+	{
+		g_CooldownQueue.Push(stageIndex);
+		LogMessage("Added stage %d (%s) to cooldown queue. New length: %d", stageIndex, g_sStageName[stageIndex], g_CooldownQueue.Length);
+	}
+
+	// If the limit is reached, remove the oldest stage from cooldown
+	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
+	{
+		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
+		g_CooldownQueue.Erase(0);
+	}
 }
 
 stock void LogCooldownDebug()
