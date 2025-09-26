@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.0.2",
+	version     = "2.1.0",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -38,7 +38,7 @@ bool g_bPlayedZM = false;
 bool g_bVoteFinished = true;
 bool bStartVoteNextRound = false;
 
-bool g_bOnCooldown[NUMBEROFSTAGES];
+ArrayList g_CooldownQueue = null; // FIFO queue of stages on cooldown
 static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal + Ultima)", "Extreme 3 (ZED)", "Extreme 3 (Hellz)", "Race Mode", "Zombie Mode", "Extreme 3 (NiDE)", "Extreme 3 (RMZS)"};
 
 int g_Winnerstage;
@@ -56,6 +56,7 @@ public void OnPluginStart()
 	g_cCDNumber = CreateConVar("sm_makovote_cd_maxstages", "3", "Number of stages to be on cooldown before reset", FCVAR_NOTIFY, true, 0.0, true, float(NUMBEROFSTAGES));
 
 	RegAdminCmd("sm_makovote", Command_AdminStartVote, ADMFLAG_CONVARS, "sm_makovote");
+	RegAdminCmd("sm_makovote_debug", Command_DebugCooldown, ADMFLAG_ROOT, "Show current cooldown queue");
 	RegAdminCmd("sm_racebhop", Command_RaceBhop, ADMFLAG_ROOT);
 
 	RegServerCmd("sm_makovote", Command_StartVote);
@@ -78,8 +79,18 @@ public void OnMapStart()
 	bStartVoteNextRound = false;
 	g_bPlayedZM = false;
 
-	for (int i = 0; i <= (NUMBEROFSTAGES - 1); i++)
-		g_bOnCooldown[i] = false;
+	g_CooldownQueue = new ArrayList();
+
+	LogCooldownDebug();
+}
+
+public void OnMapEnd()
+{
+	if (!g_bValidMap)
+		return;
+
+	delete g_StageList;
+	delete g_CooldownQueue;
 }
 
 stock bool VerifyMap()
@@ -260,6 +271,7 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 {
 	if (!g_bValidMap)
 		return;
+
 
 	if (bStartVoteNextRound)
 	{
@@ -557,6 +569,51 @@ public Action Command_AdminStartVote(int client, int argc)
 	return Plugin_Handled;
 }
 
+public Action Command_DebugCooldown(int client, int argc)
+{
+	if (!g_bValidMap)
+		return Plugin_Handled;
+
+	ReplyToCommand(client, "=== MakoVote Cooldown Debug ===");
+	ReplyToCommand(client, "Max cooldown stages: %d", g_cCDNumber.IntValue);
+	ReplyToCommand(client, "Current cooldown queue length: %d", g_CooldownQueue.Length);
+	ReplyToCommand(client, "");
+
+	if (g_CooldownQueue.Length == 0)
+	{
+		ReplyToCommand(client, "No stages currently on cooldown.");
+	}
+	else
+	{
+		ReplyToCommand(client, "Cooldown queue (FIFO order - oldest first):");
+		for (int i = 0; i < g_CooldownQueue.Length; i++)
+		{
+			int stageIndex = g_CooldownQueue.Get(i);
+			ReplyToCommand(client, "  [%d] Stage %d: %s", i+1, stageIndex, g_sStageName[stageIndex]);
+		}
+	}
+
+	ReplyToCommand(client, "");
+	ReplyToCommand(client, "Available stages:");
+	int availableCount = 0;
+	for (int i = 0; i < NUMBEROFSTAGES; i++)
+	{
+		if (!IsStageOnCooldown(i))
+		{
+			ReplyToCommand(client, "  Stage %d: %s", i, g_sStageName[i]);
+			availableCount++;
+		}
+	}
+
+	if (availableCount == 0)
+		ReplyToCommand(client, "  None (all stages on cooldown!)");
+
+	ReplyToCommand(client, "");
+	ReplyToCommand(client, "=== End Debug ===");
+
+	return Plugin_Handled;
+}
+
 stock Action AdminStartVote_Timer(Handle hTimer)
 {
 	CPrintToChatAll("{green}[MakoVote] {white}Restarting round, be ready to vote.");
@@ -578,29 +635,22 @@ public void Cmd_StartVote()
 {
 	int iCurrentStage = GetCurrentStage();
 
+	// Add the winning stage to cooldown queue
+	if (!IsStageOnCooldown(g_Winnerstage))
+	{
+		g_CooldownQueue.Push(g_Winnerstage);
+		LogMessage("Added stage %d (%s) to cooldown queue. New length: %d", g_Winnerstage, g_sStageName[g_Winnerstage], g_CooldownQueue.Length);
+	}
 
-	if (iCurrentStage > -1)
-		g_bOnCooldown[iCurrentStage] = true;
+	// If the limit is reached, remove the oldest stage from cooldown
+	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
+	{
+		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
+		g_CooldownQueue.Erase(0);
+	}
 
 	if (iCurrentStage == 5)
 		g_bPlayedZM = true;
-
-	int iOnCD = 0;
-	int iOldestStage = -1;
-
-	for (int i = 0; i <= (NUMBEROFSTAGES - 1); i++)
-	{
-		if (g_bOnCooldown[i])
-		{
-			iOnCD += 1;
-			if (iOldestStage == -1)
-				iOldestStage = i; // First stage on cooldown found
-		}
-	}
-
-	// If the limit is reached, unlock only the oldest stage
-	if (iOnCD >= g_cCDNumber.IntValue && iOldestStage != -1)
-		g_bOnCooldown[iOldestStage] = false;
 
 	g_bVoteFinished = false;
 	GenerateArray();
@@ -609,12 +659,12 @@ public void Cmd_StartVote()
 
 public Action StartVote(Handle timer)
 {
-	static int iCountDown = 5;
+	static int iCountDown = 3;
 	PrintCenterTextAll("[MakoVote] Starting Vote in %ds", iCountDown);
 
 	if (iCountDown-- <= 0)
 	{
-		iCountDown = 5;
+		iCountDown = 3;
 		g_CountdownTimer = null;
 		InitiateVote();
 		return Plugin_Stop;
@@ -626,11 +676,13 @@ public void InitiateVote()
 {
 	if (IsVoteInProgress())
 	{
-		CPrintToChatAll("{green}[Mako Vote] {white}Another vote is currently in progress, retrying again in 5s.");
+		CPrintToChatAll("{green}[Mako Vote] {white}Another vote is currently in progress, retrying again in 3s.");
 		delete g_CountdownTimer;
-		g_CountdownTimer = CreateTimer(5.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		g_CountdownTimer = CreateTimer(3.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
+
+	LogCooldownDebug();
 
 	Handle menuStyle = GetMenuStyleHandle(view_as<MenuStyle>(0));
 	g_VoteMenu = CreateMenuEx(menuStyle, Handler_MakoVoteMenu, MenuAction_End | MenuAction_Display | MenuAction_DisplayItem | MenuAction_VoteCancel);
@@ -652,7 +704,7 @@ public void InitiateVote()
 				if (bSkipZMStage)
 					continue;
 
-				bool disableItem = g_bOnCooldown[j];
+				bool disableItem = IsStageOnCooldown(j);
 				AddMenuItem(g_VoteMenu, sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
 			}
 		}
@@ -726,6 +778,20 @@ public void Handler_VoteFinishedGeneric(Handle menu, int num_votes, int num_clie
 			g_Winnerstage = i;
 	}
 
+	// Add the winning stage to cooldown queue
+	if (!IsStageOnCooldown(g_Winnerstage))
+	{
+		g_CooldownQueue.Push(g_Winnerstage);
+		LogMessage("Added stage %d (%s) to cooldown queue. New length: %d", g_Winnerstage, g_sStageName[g_Winnerstage], g_CooldownQueue.Length);
+	}
+
+	// If the limit is reached, remove the oldest stage from cooldown
+	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
+	{
+		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
+		g_CooldownQueue.Erase(0);
+	}
+
 	ServerCommand("sm_stage %d", (g_Winnerstage + DEFAULTSTAGES));
 	TerminateRound();
 }
@@ -765,6 +831,48 @@ public int GetCurrentStage()
 		iCurrentStage = -1;
 
 	return iCurrentStage;
+}
+
+stock bool IsStageOnCooldown(int stageIndex)
+{
+	return g_CooldownQueue.FindValue(stageIndex) != -1;
+}
+
+stock void LogCooldownDebug()
+{
+	LogMessage("=== MakoVote Cooldown Debug ===");
+	LogMessage("Max cooldown stages: %d", g_cCDNumber.IntValue);
+	LogMessage("Current cooldown queue length: %d", g_CooldownQueue.Length);
+
+	if (g_CooldownQueue.Length == 0)
+	{
+		LogMessage("No stages currently on cooldown.");
+	}
+	else
+	{
+		LogMessage("Cooldown queue (FIFO order - oldest first):");
+		for (int i = 0; i < g_CooldownQueue.Length; i++)
+		{
+			int stageIndex = g_CooldownQueue.Get(i);
+			LogMessage("  [%d] Stage %d: %s", i+1, stageIndex, g_sStageName[stageIndex]);
+		}
+	}
+
+	LogMessage("Available stages:");
+	int availableCount = 0;
+	for (int i = 0; i < NUMBEROFSTAGES; i++)
+	{
+		if (!IsStageOnCooldown(i))
+		{
+			LogMessage("  Stage %d: %s", i, g_sStageName[i]);
+			availableCount++;
+		}
+	}
+
+	if (availableCount == 0)
+		LogMessage("  None (all stages on cooldown!)");
+
+	LogMessage("=== End Debug ===");
 }
 
 public int FindEntityByTargetname(int entity, const char[] sTargetname, const char[] sClassname)
