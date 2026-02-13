@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.1.0",
+	version     = "2.1.1",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -558,7 +558,7 @@ public Action Command_AdminStartVote(int client, int argc)
 	if (client != 0)
 	{
 		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (In %d seconds)", name, g_cDelay.IntValue);
-		CreateTimer(g_cDelay.FloatValue, AdminStartVote_Timer);
+		CreateTimer(g_cDelay.FloatValue, AdminStartVote_Timer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (Next round)", name);
