@@ -11,20 +11,18 @@
 #include <zombiereloaded>
 #define REQUIRE_PLUGIN
 
-int g_iModelIndex;
+int g_iModelIndex, g_iCDStageCount;
 
 bool g_bValidMap;
-bool g_bRaceEnabled;
-bool g_bRaceAutoBhop;
-bool g_bRaceBlockInfect;
-bool g_bRaceBlockRespawn;
+bool g_bRaceEnabled, g_bRaceAutoBhop, g_bRaceBlockInfect, g_bRaceBlockRespawn;
+bool g_bRtdEnabled;
 
 public Plugin myinfo =
 {
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.1.2",
+	version     = "2.1.3",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -32,11 +30,14 @@ public Plugin myinfo =
 #define NUMBEROFSTAGES 8
 
 ConVar g_cDelay, g_cRtd, g_cRtd_Percent, g_cZMStageMenu, g_cCDNumber;
+ConVar g_cSvAutoBhop, g_cSvAirAccelerate;
 
 bool g_bIsRevote = false;
 bool g_bPlayedZM = false;
 bool g_bVoteFinished = true;
 bool bStartVoteNextRound = false;
+bool g_bRaceAirAccelerateStored = false;
+int g_iRaceAirAccelerateOriginal;
 
 ArrayList g_CooldownQueue = null; // FIFO queue of stages on cooldown
 static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal + Ultima)", "Extreme 3 (ZED)", "Extreme 3 (Hellz)", "Race Mode", "Zombie Mode", "Extreme 3 (NiDE)", "Extreme 3 (RMZS)"};
@@ -54,6 +55,13 @@ public void OnPluginStart()
 	g_cRtd_Percent = CreateConVar("sm_makovote_rtd_percent", "15", "Percentage chance value to trigger ZM mod with RTD", FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	g_cZMStageMenu = CreateConVar("sm_makovote_zmstage_menu", "1", "Enable/Disable the ZM stage in the menu [dependency: sm_makovote_rtd 0]", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_cCDNumber = CreateConVar("sm_makovote_cd_maxstages", "3", "Number of stages to be on cooldown before reset", FCVAR_NOTIFY, true, 0.0, true, float(NUMBEROFSTAGES));
+	g_cSvAutoBhop = FindConVar("sv_autobunnyhopping");
+	g_cSvAirAccelerate = FindConVar("sv_airaccelerate");
+
+	g_bRtdEnabled = g_cRtd.BoolValue;
+	g_iCDStageCount = g_cCDNumber.IntValue;
+	g_cRtd.AddChangeHook(OnConVarChanged);
+	g_cCDNumber.AddChangeHook(OnConVarChanged);
 
 	RegAdminCmd("sm_makovote", Command_AdminStartVote, ADMFLAG_CONVARS, "sm_makovote");
 	RegAdminCmd("sm_makovote_debug", Command_DebugCooldown, ADMFLAG_ROOT, "Show current cooldown queue");
@@ -66,6 +74,14 @@ public void OnPluginStart()
 
 	HookEvent("round_start", OnRoundStart);
 	AutoExecConfig(true);
+}
+
+void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{	
+	if (convar == g_cRtd)
+		g_bRtdEnabled = convar.BoolValue;
+	else if (convar == g_cCDNumber)
+		g_iCDStageCount = convar.IntValue;
 }
 
 public void OnMapStart()
@@ -182,22 +198,6 @@ stock bool VerifyMap()
 	return true;
 }
 
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
-{
-	if (!g_bValidMap || !g_bRaceEnabled || !g_bRaceAutoBhop || !IsClientInGame(client))
-		return Plugin_Continue;
-
-	if (!IsPlayerAlive(client) || !(buttons & IN_JUMP))
-		return Plugin_Continue;
-
-	if (GetEntityMoveType(client) & MOVETYPE_LADDER || GetEntityFlags(client) & FL_ONGROUND)
-		return Plugin_Continue;
-
-	buttons &= ~IN_JUMP;
-
-	return Plugin_Continue;
-}
-
 public void OnEntityCreated(int entity)
 {
 	if (!g_bValidMap)
@@ -303,7 +303,7 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 	if (bStartVoteNextRound)
 	{
 		delete g_CountdownTimer;
-		if (!g_bPlayedZM && g_cRtd.BoolValue)
+		if (!g_bPlayedZM && g_bRtdEnabled)
 		{
 			CPrintToChatAll("{green}[Mako Vote] {white}ZM has not been played yet. Rolling the dice...");
 			if (GetRandomInt(1, 100) <= g_cRtd_Percent.IntValue)
@@ -318,7 +318,7 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 			}
 			CPrintToChatAll("{green}[Mako Vote] {white}Result: Normal Mako Vote");
 		}
-		if (g_bPlayedZM && g_cRtd.BoolValue)
+		if (g_bPlayedZM && g_bRtdEnabled)
 			CPrintToChatAll("{green}[Mako Vote] {white}ZM already has been played. Starting normal vote.");
 
 		g_CountdownTimer = CreateTimer(1.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -464,17 +464,9 @@ public Action Command_RaceBhop(int client, int args)
 	g_bRaceAutoBhop = !g_bRaceAutoBhop;
 
 	if (g_bRaceAutoBhop)
-	{
-		ServerCommand("sm plugins unload anticheats/AntiBhopCheat");
-		ServerCommand("sm plugins reload adminmenu");
-		ServerCommand("sv_airaccelerate 150");
-	}
+		StartRaceSettings();
 	else
-	{
-		ServerCommand("sm plugins load anticheats/AntiBhopCheat");
-		ServerCommand("sm plugins reload adminmenu");
-		ServerCommand("sv_airaccelerate 10");
-	}
+		EndRaceSettings();
 
 	return Plugin_Handled;
 }
@@ -484,13 +476,7 @@ public Action Command_CancelRace(int args)
 	if (!g_bValidMap)
 		return Plugin_Handled;
 
-	if (g_bRaceAutoBhop)
-	{
-		ServerCommand("sm plugins load anticheats/AntiBhopCheat");
-		ServerCommand("sm plugins reload adminmenu");
-		ServerCommand("sv_airaccelerate 10");
-	}
-
+	EndRaceSettings();
 	g_bRaceEnabled = false;
 	g_bRaceAutoBhop = false;
 	g_bRaceBlockInfect = false;
@@ -504,6 +490,7 @@ public Action Command_StartRace(int args)
 	if (!g_bValidMap)
 		return Plugin_Handled;
 
+	StartRaceSettings();
 	g_bRaceEnabled = true;
 	g_bRaceBlockInfect = true;
 	g_bRaceBlockRespawn = true;
@@ -516,6 +503,7 @@ public Action Command_EndRace(int args)
 	if (!g_bValidMap)
 		return Plugin_Handled;
 
+	EndRaceSettings();
 	g_bRaceBlockInfect = false;
 
 	char sTargetname[128];
@@ -602,7 +590,7 @@ public Action Command_DebugCooldown(int client, int argc)
 		return Plugin_Handled;
 
 	ReplyToCommand(client, "=== MakoVote Cooldown Debug ===");
-	ReplyToCommand(client, "Max cooldown stages: %d", g_cCDNumber.IntValue);
+	ReplyToCommand(client, "Max cooldown stages: %d", g_iCDStageCount);
 	ReplyToCommand(client, "Current cooldown queue length: %d", g_CooldownQueue.Length);
 	ReplyToCommand(client, "");
 
@@ -709,7 +697,7 @@ public void InitiateVote()
 		g_StageList.GetString(i, sBuffer, sizeof(sBuffer));
 
 		bool isZombieMode = strcmp(sBuffer, "Zombie Mode") == 0;
-		bool bSkipZMStage = isZombieMode && (g_cRtd.BoolValue || g_bPlayedZM || !g_cZMStageMenu.BoolValue);
+		bool bSkipZMStage = isZombieMode && (g_bRtdEnabled || g_bPlayedZM || !g_cZMStageMenu.BoolValue);
 
 		for (int j = 0; j <= (NUMBEROFSTAGES - 1); j++)
 		{
@@ -851,9 +839,9 @@ stock void AddStageToCooldown(int stageIndex)
 	}
 
 	// If the limit is reached, remove the oldest stage from cooldown
-	if (g_CooldownQueue.Length > g_cCDNumber.IntValue)
+	if (g_CooldownQueue.Length > g_iCDStageCount)
 	{
-		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_cCDNumber.IntValue);
+		LogMessage("Cooldown limit reached! Length: %d, Limit: %d - Removing oldest stage", g_CooldownQueue.Length, g_iCDStageCount);
 		g_CooldownQueue.Erase(0);
 	}
 }
@@ -861,7 +849,7 @@ stock void AddStageToCooldown(int stageIndex)
 stock void LogCooldownDebug()
 {
 	LogMessage("=== MakoVote Cooldown Debug ===");
-	LogMessage("Max cooldown stages: %d", g_cCDNumber.IntValue);
+	LogMessage("Max cooldown stages: %d", g_iCDStageCount);
 	LogMessage("Current cooldown queue length: %d", g_CooldownQueue.Length);
 
 	if (g_CooldownQueue.Length == 0)
@@ -931,4 +919,39 @@ void TerminateRound()
 	// Fix the score - Round Draw give 1 point to CT Team
 	int score = GetTeamScore(CS_TEAM_CT);
 	if (score > 0) SetTeamScore(CS_TEAM_CT, (score - 1));
+}
+
+void StartRaceSettings()
+{
+	if (g_cSvAutoBhop != null)
+		g_cSvAutoBhop.BoolValue = true;
+
+	if (g_cSvAirAccelerate == null)
+		g_cSvAirAccelerate = FindConVar("sv_airaccelerate");
+
+	if (g_cSvAirAccelerate != null)
+	{
+		if (!g_bRaceAirAccelerateStored)
+		{
+			g_iRaceAirAccelerateOriginal = g_cSvAirAccelerate.IntValue;
+			g_bRaceAirAccelerateStored = true;
+		}
+
+		g_cSvAirAccelerate.IntValue = 150;
+	}
+}
+
+void EndRaceSettings()
+{
+	if (g_cSvAutoBhop != null)
+		g_cSvAutoBhop.BoolValue = false;
+
+	if (g_cSvAirAccelerate == null)
+		g_cSvAirAccelerate = FindConVar("sv_airaccelerate");
+
+	if (g_cSvAirAccelerate != null && g_bRaceAirAccelerateStored)
+	{
+		g_cSvAirAccelerate.IntValue = g_iRaceAirAccelerateOriginal;
+		g_bRaceAirAccelerateStored = false;
+	}
 }
