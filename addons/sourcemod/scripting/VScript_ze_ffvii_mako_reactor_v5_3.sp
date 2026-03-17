@@ -24,7 +24,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.1.1",
+	version     = "2.1.2",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -198,18 +198,46 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	return Plugin_Continue;
 }
 
-public void OnEntitySpawned(int entity, const char[] sClassname)
+public void OnEntityCreated(int entity)
 {
-	if (!g_bValidMap || g_bVoteFinished || !IsValidEntity(entity) || !IsValidEdict(entity))
+	if (!g_bValidMap)
+		return;
+
+	if (CanTestFeatures() && GetFeatureStatus(FeatureType_Native, "SDKHook_OnEntitySpawned") == FeatureStatus_Available)
+		return;
+
+	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost);
+}
+
+public void OnEntitySpawnedPost(int entity)
+{
+	if (!IsValidEntity(entity))
+		return;
+
+	// 1 frame later required to get some properties
+	RequestFrame(ProcessEntitySpawned, entity);
+}
+
+public void OnEntitySpawned(int entity)
+{
+	if (!g_bValidMap)
+		return;
+
+	ProcessEntitySpawned(entity);
+}
+
+public void ProcessEntitySpawned(int entity)
+{
+	if (!IsValidEntity(entity))
 		return;
 
 	char sTargetname[128];
 	GetEntPropString(entity, Prop_Data, "m_iName", sTargetname, sizeof(sTargetname));
 
-	if ((strcmp(sTargetname, "espad") != 0) && (strcmp(sTargetname, "ss_slow") != 0) && (strcmp(sClassname, "ambient_generic") == 0))
-		AcceptEntityInput(entity, "Kill");
+	if (sTargetname[0] != 'E' && sTargetname[0] != 'L')
+		return;
 
-	if (!strncmp(sTargetname, "EX3SephirothWeapon", 18, false))
+	if (strcmp(sTargetname, "EX3SephirothWeapon", false) == 0)
 	{
 		char sVariant[512];
 		Format(sVariant, sizeof(sVariant), "OnPlayerPickup !activator:AddOutput:modelindex %d:0:1", g_iModelIndex);
@@ -217,7 +245,7 @@ public void OnEntitySpawned(int entity, const char[] sClassname)
 		SetVariantString(sVariant);
 		AcceptEntityInput(entity, "AddOutput");
 	}
-	else if (!strncmp(sTargetname, "EX3EndingRelay", 14, false))
+	else if (strcmp(sTargetname, "EX3EndingRelay", false) == 0)
 	{
 		SetVariantString("OnUser1 cancion_2:Kill::0:1");
 		AcceptEntityInput(entity, "AddOutput");
@@ -228,7 +256,7 @@ public void OnEntitySpawned(int entity, const char[] sClassname)
 		SetVariantString("OnUser1 cancion_1:PlaySound::0.02:1");
 		AcceptEntityInput(entity, "AddOutput");
 	}
-	else if (!strncmp(sTargetname, "LevelRelayExtreme3Zombieden", 27, false))
+	else if (strcmp(sTargetname, "LevelRelayExtreme3Zombieden", false) == 0)
 	{
 		SetVariantString("OnTrigger cancion_1:AddOutput:message #zombieden/custommusic/advent2.mp3:1:1");
 		AcceptEntityInput(entity, "AddOutput");
@@ -242,7 +270,7 @@ public void OnEntitySpawned(int entity, const char[] sClassname)
 		SetVariantString("OnTrigger cancion_3_extra:AddOutput:message #zombieden/custommusic/m4fix.mp3:1:1");
 		AcceptEntityInput(entity, "AddOutput");
 	}
-	else if (!strncmp(sTargetname, "LevelRelayRaceZombieden", 23, false))
+	else if (strcmp(sTargetname, "LevelRelayRaceZombieden", false) == 0)
 	{
 		SetVariantString("OnTrigger mus_zm2:Kill::0:1");
 		AcceptEntityInput(entity, "AddOutput");
