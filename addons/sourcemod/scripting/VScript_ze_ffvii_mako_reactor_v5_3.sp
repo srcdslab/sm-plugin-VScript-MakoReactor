@@ -105,6 +105,8 @@ public void OnMapEnd()
 	if (!g_bValidMap)
 		return;
 
+	EndRaceSettings();
+
 	delete g_StageList;
 	delete g_CooldownQueue;
 }
