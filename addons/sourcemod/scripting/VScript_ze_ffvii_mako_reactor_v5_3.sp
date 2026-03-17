@@ -36,7 +36,9 @@ bool g_bIsRevote = false;
 bool g_bPlayedZM = false;
 bool g_bVoteFinished = true;
 bool bStartVoteNextRound = false;
+bool g_bRaceAutoBhopStored = false;
 bool g_bRaceAirAccelerateStored = false;
+bool g_bRaceAutoBhopOriginal;
 int g_iRaceAirAccelerateOriginal;
 
 ArrayList g_CooldownQueue = null; // FIFO queue of stages on cooldown
@@ -109,6 +111,14 @@ public void OnMapEnd()
 
 	delete g_StageList;
 	delete g_CooldownQueue;
+}
+
+public void OnPluginEnd()
+{
+	if (!g_bValidMap)
+		return;
+
+	EndRaceSettings();
 }
 
 stock bool VerifyMap()
@@ -926,7 +936,15 @@ void TerminateRound()
 void StartRaceSettings()
 {
 	if (g_cSvAutoBhop != null)
+	{
+		if (!g_bRaceAutoBhopStored)
+		{
+			g_bRaceAutoBhopOriginal = g_cSvAutoBhop.BoolValue;
+			g_bRaceAutoBhopStored = true;
+		}
+
 		g_cSvAutoBhop.BoolValue = true;
+	}
 
 	if (g_cSvAirAccelerate == null)
 		g_cSvAirAccelerate = FindConVar("sv_airaccelerate");
@@ -945,8 +963,11 @@ void StartRaceSettings()
 
 void EndRaceSettings()
 {
-	if (g_cSvAutoBhop != null)
-		g_cSvAutoBhop.BoolValue = false;
+	if (g_cSvAutoBhop != null && g_bRaceAutoBhopStored)
+	{
+		g_cSvAutoBhop.BoolValue = g_bRaceAutoBhopOriginal;
+		g_bRaceAutoBhopStored = false;
+	}
 
 	if (g_cSvAirAccelerate == null)
 		g_cSvAirAccelerate = FindConVar("sv_airaccelerate");
