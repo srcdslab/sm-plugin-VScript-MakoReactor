@@ -209,17 +209,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost);
 }
 
-public void OnEntityDestroyed(int entity)
-{
-	if (!g_bValidMap)
-		return;
-
-	if (CanTestFeatures() && GetFeatureStatus(FeatureType_Native, "SDKHook_OnEntitySpawned") == FeatureStatus_Available)
-		return;
-
-	SDKUnhook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost);
-}
-
 public void OnEntitySpawnedPost(int entity)
 {
 	if (!IsValidEntity(entity))
