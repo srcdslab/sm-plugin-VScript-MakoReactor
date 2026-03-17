@@ -198,7 +198,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	return Plugin_Continue;
 }
 
-public void OnEntityCreated(int entity, const char[] classname)
+public void OnEntityCreated(int entity)
 {
 	if (!g_bValidMap)
 		return;
@@ -218,7 +218,7 @@ public void OnEntitySpawnedPost(int entity)
 	RequestFrame(ProcessEntitySpawned, entity);
 }
 
-public void OnEntitySpawned(int entity, const char[] classname)
+public void OnEntitySpawned(int entity)
 {
 	if (!g_bValidMap)
 		return;
