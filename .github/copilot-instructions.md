@@ -16,8 +16,8 @@ This repository contains a SourcePawn plugin for SourceMod that extends function
 - **Game**: Counter-Strike: Source with specific map support
 
 ### Build System
-- **SourceKnight**: Primary build tool (configured in `sourceknight.yaml`)
-- **Dependencies**: Automatically managed via SourceKnight configuration
+- **GitHub Actions**: Primary build tool (configured in `.github/workflows/ci.yml`), using `rumblefrog/setup-sp` and `spcomp`
+- **Dependencies**: Cloned and copied into `include/` during the CI workflow
 - **Output**: Compiled `.smx` files in `/addons/sourcemod/plugins/`
 - **Assets**: Game files (models, materials, sounds) in `/common/` directory
 
@@ -34,8 +34,7 @@ This repository contains a SourcePawn plugin for SourceMod that extends function
   /materials/                    # Material files (.vmt, .vtf)
   /models/                       # Model files (.mdl, .phy, .vvd, .vtx)
   /sound/                        # Audio files (.mp3)
-/sourceknight.yaml              # Build configuration
-/.github/workflows/ci.yml       # CI/CD pipeline
+/.github/workflows/ci.yml       # Build configuration & CI/CD pipeline
 ```
 
 ## Code Structure & Conventions
@@ -80,11 +79,10 @@ This repository contains a SourcePawn plugin for SourceMod that extends function
 
 ### Building the Plugin
 ```bash
-# Using SourceKnight (preferred method)
-sourceknight build
+# CI (GitHub Actions) builds automatically on push/PR via .github/workflows/ci.yml
 
-# Manual compilation (if needed)
-spcomp VScript_ze_ffvii_mako_reactor_v5_3.sp
+# Manual compilation (if needed), from addons/sourcemod/scripting with dependencies in ./include
+spcomp -i include -o ../plugins/VScript_ze_ffvii_mako_reactor_v5_3.smx VScript_ze_ffvii_mako_reactor_v5_3.sp
 ```
 
 ### Testing
