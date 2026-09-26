@@ -22,12 +22,12 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.1.3",
+	version     = "2.2.0",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
 #define DEFAULTSTAGES 4 // Normal, Hard, Ex, Ex2 (we dont count warmup)
-#define NUMBEROFSTAGES 8
+#define NUMBEROFSTAGES 10
 
 ConVar g_cDelay, g_cRtd, g_cRtd_Percent, g_cZMStageMenu, g_cCDNumber;
 ConVar g_cSvAutoBhop, g_cSvAirAccelerate;
@@ -42,7 +42,7 @@ bool g_bRaceAutoBhopOriginal;
 int g_iRaceAirAccelerateOriginal;
 
 ArrayList g_CooldownQueue = null; // FIFO queue of stages on cooldown
-static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal + Ultima)", "Extreme 3 (ZED)", "Extreme 3 (Hellz)", "Race Mode", "Zombie Mode", "Extreme 3 (NiDE)", "Extreme 3 (RMZS)"};
+static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal + Ultima)", "Extreme 3 (ZED)", "Extreme 3 (Hellz)", "Race Mode", "Zombie Mode", "Extreme 3 (NiDE)", "Extreme 3 (RMZS)", "Extreme 4 (Zeddys cmer)", "Extreme 3 (RMZS cmer)"};
 
 int g_Winnerstage;
 
@@ -206,6 +206,22 @@ stock bool VerifyMap()
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_mix.mp3");
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_play.mp3");
 	AddFileToDownloadsTable("sound/jaek/ze_music/mako_reactor/muzzy_play2.mp3");
+
+	// Only with a stripper providing Extreme 4 (Zeddys cmer) and/or Extreme 3 (RMZS cmer)
+	if (IsStageAvailable(8) || IsStageAvailable(9))
+	{
+		static const char sZeddysMusics[][] = {"propanefullsong", "watercolormako", "the_qemists_no_more", "showdownmako", "ext3_music_primary", "ext3_music_secondary"};
+		char sBuffer[PLATFORM_MAX_PATH];
+
+		for (int i = 0; i < sizeof(sZeddysMusics); i++)
+		{
+			FormatEx(sBuffer, sizeof(sBuffer), "#music/zeddy/%s.mp3", sZeddysMusics[i]);
+			PrecacheSound(sBuffer, true);
+
+			FormatEx(sBuffer, sizeof(sBuffer), "sound/music/zeddy/%s.mp3", sZeddysMusics[i]);
+			AddFileToDownloadsTable(sBuffer);
+		}
+	}
 
 	return true;
 }
@@ -719,6 +735,10 @@ public void InitiateVote()
 				if (bSkipZMStage)
 					continue;
 
+				// Skip stages not provided by the stripper
+				if (!IsStageAvailable(j))
+					continue;
+
 				bool disableItem = IsStageOnCooldown(j);
 				AddMenuItem(g_VoteMenu, sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
 			}
@@ -830,10 +850,25 @@ public int GetCurrentStage()
 		iCurrentStage = 6;
 	else if (iCounterVal == 14) // Extreme 3 (RMZS)
 		iCurrentStage = 7;
+	else if (iCounterVal == 15) // Extreme 4 (Zeddys cmer)
+		iCurrentStage = 8;
+	else if (iCounterVal == 16) // Extreme 3 (RMZS cmer)
+		iCurrentStage = 9;
 	else
 		iCurrentStage = -1;
 
 	return iCurrentStage;
+}
+
+stock bool IsStageAvailable(int stageIndex)
+{
+	// These stages are not part of the default stripper
+	if (stageIndex == 8)
+		return FindEntityByTargetname(INVALID_ENT_REFERENCE, "LevelRelayExtreme4Zeddys", "logic_relay") != INVALID_ENT_REFERENCE;
+	if (stageIndex == 9)
+		return FindEntityByTargetname(INVALID_ENT_REFERENCE, "LevelRelayExtreme3RMZSCmer", "logic_relay") != INVALID_ENT_REFERENCE;
+
+	return true;
 }
 
 stock bool IsStageOnCooldown(int stageIndex)
