@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.2.0",
+	version     = "2.2.1",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -46,7 +46,7 @@ static char g_sStageName[NUMBEROFSTAGES][512] = {"Extreme 2", "Extreme 2 (Heal +
 
 int g_Winnerstage;
 
-Handle g_VoteMenu = null;
+Menu g_VoteMenu = null;
 ArrayList g_StageList = null;
 Handle g_CountdownTimer = null;
 
@@ -349,7 +349,7 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 		if (g_bPlayedZM && g_bRtdEnabled)
 			CPrintToChatAll("{green}[Mako Vote] {white}ZM already has been played. Starting normal vote.");
 
-		g_CountdownTimer = CreateTimer(1.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		g_CountdownTimer = CreateTimer(1.0, StartVote, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		bStartVoteNextRound = false;
 	}
 
@@ -468,7 +468,7 @@ public void GenerateArray()
 	for (int i = 0; i <= (NUMBEROFSTAGES - 1); i++)
 		g_StageList.PushString(g_sStageName[i]);
 
-	int iArraySize = GetArraySize(g_StageList);
+	int iArraySize = g_StageList.Length;
 
 	for (int i = 0; i <= (iArraySize - 1); i++)
 	{
@@ -602,7 +602,7 @@ public Action Command_AdminStartVote(int client, int argc)
 	if (client != 0)
 	{
 		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (In %d seconds)", name, g_cDelay.IntValue);
-		CreateTimer(g_cDelay.FloatValue, AdminStartVote_Timer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(g_cDelay.FloatValue, AdminStartVote_Timer, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (Next round)", name);
@@ -709,7 +709,7 @@ public void InitiateVote()
 	{
 		CPrintToChatAll("{green}[Mako Vote] {white}Another vote is currently in progress, retrying again in 3s.");
 		delete g_CountdownTimer;
-		g_CountdownTimer = CreateTimer(3.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		g_CountdownTimer = CreateTimer(3.0, StartVote, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
 
@@ -740,24 +740,24 @@ public void InitiateVote()
 					continue;
 
 				bool disableItem = IsStageOnCooldown(j);
-				AddMenuItem(g_VoteMenu, sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
+				g_VoteMenu.AddItem(sBuffer, sBuffer, disableItem ? ITEMDRAW_DISABLED : 0);
 			}
 		}
 	}
 
-	SetMenuOptionFlags(g_VoteMenu, MENU_NO_PAGINATION);
-	SetMenuTitle(g_VoteMenu, "What stage to play next?");
-	SetVoteResultCallback(g_VoteMenu, Handler_SettingsVoteFinished);
-	VoteMenuToAll(g_VoteMenu, 15);
+	g_VoteMenu.OptionFlags = MENU_NO_PAGINATION;
+	g_VoteMenu.SetTitle("What stage to play next?");
+	g_VoteMenu.VoteResultCallback = Handler_SettingsVoteFinished;
+	g_VoteMenu.DisplayVoteToAll(15);
 }
 
-public int Handler_MakoVoteMenu(Handle menu, MenuAction action, int param1, int param2)
+public int Handler_MakoVoteMenu(Menu menu, MenuAction action, int param1, int param2)
 {
 	switch(action)
 	{
 		case MenuAction_End:
 		{
-			CloseHandle(menu);
+			delete menu;
 
 			if (param1 != -1)
 			{
@@ -769,7 +769,7 @@ public int Handler_MakoVoteMenu(Handle menu, MenuAction action, int param1, int 
 	return 0;
 }
 
-public void Handler_SettingsVoteFinished(Handle menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
+public void Handler_SettingsVoteFinished(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
 {
 	int highest_votes = item_info[0][VOTEINFO_ITEM_VOTES];
 	int required_percent = 60;
@@ -780,15 +780,15 @@ public void Handler_SettingsVoteFinished(Handle menu, int num_votes, int num_cli
 		CPrintToChatAll("{green}[MakoVote] {white}A revote is needed!");
 		char sFirst[128];
 		char sSecond[128];
-		GetMenuItem(menu, item_info[0][VOTEINFO_ITEM_INDEX], sFirst, sizeof(sFirst));
-		GetMenuItem(menu, item_info[1][VOTEINFO_ITEM_INDEX], sSecond, sizeof(sSecond));
+		menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], sFirst, sizeof(sFirst));
+		menu.GetItem(item_info[1][VOTEINFO_ITEM_INDEX], sSecond, sizeof(sSecond));
 		g_StageList.Clear();
 		g_StageList.PushString(sFirst);
 		g_StageList.PushString(sSecond);
 		g_bIsRevote = true;
 
 		delete g_CountdownTimer;
-		g_CountdownTimer = CreateTimer(1.0, StartVote, INVALID_HANDLE, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		g_CountdownTimer = CreateTimer(1.0, StartVote, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 		return;
 	}
@@ -798,11 +798,11 @@ public void Handler_SettingsVoteFinished(Handle menu, int num_votes, int num_cli
 	Handler_VoteFinishedGeneric(menu, num_votes, num_clients, client_info, num_items, item_info);
 }
 
-public void Handler_VoteFinishedGeneric(Handle menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
+public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
 {
 	g_bVoteFinished = true;
 	char sWinner[128];
-	GetMenuItem(menu, item_info[0][VOTEINFO_ITEM_INDEX], sWinner, sizeof(sWinner));
+	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], sWinner, sizeof(sWinner));
 	float fPercentage = float(item_info[0][VOTEINFO_ITEM_VOTES] * 100) / float(num_votes);
 
 	CPrintToChatAll("{green}[MakoVote] {white}Vote Finished! Winner: {red}%s{white} with %d%% of %d votes!", sWinner, RoundToFloor(fPercentage), num_votes);
