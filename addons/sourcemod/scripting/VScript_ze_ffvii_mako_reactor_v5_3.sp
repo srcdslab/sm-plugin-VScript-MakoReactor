@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.2.1",
+	version     = "2.2.2",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
@@ -52,6 +52,8 @@ Handle g_CountdownTimer = null;
 
 public void OnPluginStart()
 {
+	LoadTranslations("VScript_ze_ffvii_mako_reactor_v5_3.phrases");
+
 	g_cDelay = CreateConVar("sm_makovote_delay", "3.0", "Time in seconds for firing the vote from admin command", FCVAR_NOTIFY, true, 1.0, true, 10.0);
 	g_cRtd = CreateConVar("sm_makovote_rtd", "0", "Enable Roll The Dice", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_cRtd_Percent = CreateConVar("sm_makovote_rtd_percent", "15", "Percentage chance value to trigger ZM mod with RTD", FCVAR_NOTIFY, true, 0.0, true, 100.0);
@@ -333,10 +335,10 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 		delete g_CountdownTimer;
 		if (!g_bPlayedZM && g_bRtdEnabled)
 		{
-			CPrintToChatAll("{green}[Mako Vote] {white}ZM has not been played yet. Rolling the dice...");
+			CPrintToChatAll("{green}[Mako Vote] {white}%t", "Mako RTD Rolling");
 			if (GetRandomInt(1, 100) <= g_cRtd_Percent.IntValue)
 			{
-				CPrintToChatAll("{green}[Mako Vote] {white}Result: ZM, restarting round.");
+				CPrintToChatAll("{green}[Mako Vote] {white}%t", "Mako RTD Result ZM");
 				ServerCommand("sm_stage zm");
 				g_bVoteFinished = true;
 				bStartVoteNextRound = false;
@@ -344,10 +346,10 @@ public void OnRoundStart(Event hEvent, const char[] sEvent, bool bDontBroadcast)
 				CS_TerminateRound(1.0, CSRoundEnd_GameStart, false);
 				return;
 			}
-			CPrintToChatAll("{green}[Mako Vote] {white}Result: Normal Mako Vote");
+			CPrintToChatAll("{green}[Mako Vote] {white}%t", "Mako RTD Result Normal");
 		}
 		if (g_bPlayedZM && g_bRtdEnabled)
-			CPrintToChatAll("{green}[Mako Vote] {white}ZM already has been played. Starting normal vote.");
+			CPrintToChatAll("{green}[Mako Vote] {white}%t", "Mako ZM Already Played");
 
 		g_CountdownTimer = CreateTimer(1.0, StartVote, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		bStartVoteNextRound = false;
@@ -594,18 +596,16 @@ public Action Command_AdminStartVote(int client, int argc)
 
 	char name[64];
 
-	if (client == 0)
-		name = "The server";
-	else if (!GetClientName(client, name, sizeof(name)))
+	if (client != 0 && !GetClientName(client, name, sizeof(name)))
 		Format(name, sizeof(name), "Disconnected (uid:%d)", client);
 
 	if (client != 0)
 	{
-		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (In %d seconds)", name, g_cDelay.IntValue);
+		CPrintToChatAll("{green}[SM] %t", "Mako Vote Initiated", name, g_cDelay.IntValue);
 		CreateTimer(g_cDelay.FloatValue, AdminStartVote_Timer, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
-		CPrintToChatAll("{green}[SM] {cyan}%s {white}has initiated a mako vote round (Next round)", name);
+		CPrintToChatAll("{green}[SM] %t", "Mako Vote Initiated Server");
 
 	Cmd_StartVote();
 
@@ -659,7 +659,7 @@ public Action Command_DebugCooldown(int client, int argc)
 
 stock Action AdminStartVote_Timer(Handle hTimer)
 {
-	CPrintToChatAll("{green}[MakoVote] {white}Restarting round, be ready to vote.");
+	CPrintToChatAll("{green}[MakoVote] {white}%t", "Mako Restarting Round");
 	TerminateRound();
 
 	return Plugin_Stop;
@@ -691,7 +691,7 @@ public void Cmd_StartVote()
 public Action StartVote(Handle timer)
 {
 	static int iCountDown = 3;
-	PrintCenterTextAll("[MakoVote] Starting Vote in %ds", iCountDown);
+	PrintCenterTextAll("[MakoVote] %t", "Mako Vote Starting In", iCountDown);
 
 	if (iCountDown-- <= 0)
 	{
@@ -707,7 +707,7 @@ public void InitiateVote()
 {
 	if (IsVoteInProgress())
 	{
-		CPrintToChatAll("{green}[Mako Vote] {white}Another vote is currently in progress, retrying again in 3s.");
+		CPrintToChatAll("{green}[Mako Vote] {white}%t", "Mako Vote In Progress");
 		delete g_CountdownTimer;
 		g_CountdownTimer = CreateTimer(3.0, StartVote, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		return;
@@ -746,7 +746,7 @@ public void InitiateVote()
 	}
 
 	g_VoteMenu.OptionFlags = MENU_NO_PAGINATION;
-	g_VoteMenu.SetTitle("What stage to play next?");
+	g_VoteMenu.SetTitle("%T", "Mako Vote Title", LANG_SERVER);
 	g_VoteMenu.VoteResultCallback = Handler_SettingsVoteFinished;
 	g_VoteMenu.DisplayVoteToAll(15);
 }
@@ -755,6 +755,14 @@ public int Handler_MakoVoteMenu(Menu menu, MenuAction action, int param1, int pa
 {
 	switch(action)
 	{
+		case MenuAction_Display:
+		{
+			char sTitle[128];
+			FormatEx(sTitle, sizeof(sTitle), "%T", "Mako Vote Title", param1);
+
+			Panel panel = view_as<Panel>(param2);
+			panel.SetTitle(sTitle);
+		}
 		case MenuAction_End:
 		{
 			delete menu;
@@ -777,7 +785,7 @@ public void Handler_SettingsVoteFinished(Menu menu, int num_votes, int num_clien
 
 	if ((highest_votes < required_votes) && (!g_bIsRevote))
 	{
-		CPrintToChatAll("{green}[MakoVote] {white}A revote is needed!");
+		CPrintToChatAll("{green}[MakoVote] {white}%t", "Mako Revote Needed");
 		char sFirst[128];
 		char sSecond[128];
 		menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], sFirst, sizeof(sFirst));
@@ -805,7 +813,7 @@ public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_client
 	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], sWinner, sizeof(sWinner));
 	float fPercentage = float(item_info[0][VOTEINFO_ITEM_VOTES] * 100) / float(num_votes);
 
-	CPrintToChatAll("{green}[MakoVote] {white}Vote Finished! Winner: {red}%s{white} with %d%% of %d votes!", sWinner, RoundToFloor(fPercentage), num_votes);
+	CPrintToChatAll("{green}[MakoVote] {white}%t", "Mako Vote Finished", sWinner, RoundToFloor(fPercentage), num_votes);
 
 	for (int i = 0; i <= (NUMBEROFSTAGES - 1); i++)
 	{

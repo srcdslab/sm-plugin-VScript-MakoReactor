@@ -1,0 +1,137 @@
+"Phrases"
+{
+	"Mako RTD Rolling"
+	{
+		"en"		"ZM has not been played yet. Rolling the dice..."
+		"fr"		"Le ZM n'a pas encore été joué. Lancement des dés..."
+		"ru"		"ZM ещё не играли. Бросаем кубик..."
+		"es"		"El ZM aún no se ha jugado. Tirando los dados..."
+		"de"		"ZM wurde noch nicht gespielt. Es wird gewürfelt..."
+		"pt"		"O ZM ainda não foi jogado. Rolando os dados..."
+		"chi"		"ZM 模式尚未进行过。正在掷骰子……"
+	}
+
+	"Mako RTD Result ZM"
+	{
+		"en"		"Result: ZM, restarting round."
+		"fr"		"Résultat : ZM, redémarrage du round."
+		"ru"		"Результат: ZM, перезапуск раунда."
+		"es"		"Resultado: ZM, reiniciando la ronda."
+		"de"		"Ergebnis: ZM, die Runde wird neu gestartet."
+		"pt"		"Resultado: ZM, reiniciando o round."
+		"chi"		"结果：ZM，正在重新开始回合。"
+	}
+
+	"Mako RTD Result Normal"
+	{
+		"en"		"Result: Normal Mako Vote"
+		"fr"		"Résultat : vote Mako normal"
+		"ru"		"Результат: обычное голосование Mako"
+		"es"		"Resultado: votación Mako normal"
+		"de"		"Ergebnis: normale Mako-Abstimmung"
+		"pt"		"Resultado: votação Mako normal"
+		"chi"		"结果：普通 Mako 投票"
+	}
+
+	"Mako ZM Already Played"
+	{
+		"en"		"ZM has already been played. Starting normal vote."
+		"fr"		"Le ZM a déjà été joué. Lancement du vote normal."
+		"ru"		"ZM уже играли. Запускаем обычное голосование."
+		"es"		"El ZM ya se ha jugado. Iniciando la votación normal."
+		"de"		"ZM wurde bereits gespielt. Die normale Abstimmung beginnt."
+		"pt"		"O ZM já foi jogado. Iniciando a votação normal."
+		"chi"		"ZM 模式已经进行过。开始普通投票。"
+	}
+
+	"Mako Vote Initiated"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"{cyan}{1} {white}has initiated a Mako vote round (in {2} seconds)"
+		"fr"		"{cyan}{1} {white}a lancé un round de vote Mako (dans {2} secondes)"
+		"ru"		"{cyan}{1} {white}запустил раунд голосования Mako (через {2} сек.)"
+		"es"		"{cyan}{1} {white}ha iniciado una ronda de votación Mako (en {2} segundos)"
+		"de"		"{cyan}{1} {white}hat eine Mako-Abstimmungsrunde gestartet (in {2} Sekunden)"
+		"pt"		"{cyan}{1} {white}iniciou um round de votação Mako (em {2} segundos)"
+		"chi"		"{cyan}{1} {white}发起了 Mako 投票回合（{2} 秒后）"
+	}
+
+	"Mako Vote Initiated Server"
+	{
+		"en"		"{cyan}The server {white}has initiated a Mako vote round (next round)"
+		"fr"		"{cyan}Le serveur {white}a lancé un round de vote Mako (au prochain round)"
+		"ru"		"{cyan}Сервер {white}запустил раунд голосования Mako (в следующем раунде)"
+		"es"		"{cyan}El servidor {white}ha iniciado una ronda de votación Mako (en la próxima ronda)"
+		"de"		"{cyan}Der Server {white}hat eine Mako-Abstimmungsrunde gestartet (nächste Runde)"
+		"pt"		"{cyan}O servidor {white}iniciou um round de votação Mako (no próximo round)"
+		"chi"		"{cyan}服务器{white}发起了 Mako 投票回合（下一回合）"
+	}
+
+	"Mako Restarting Round"
+	{
+		"en"		"Restarting round, be ready to vote."
+		"fr"		"Redémarrage du round, préparez-vous à voter."
+		"ru"		"Перезапуск раунда, приготовьтесь голосовать."
+		"es"		"Reiniciando la ronda, prepárense para votar."
+		"de"		"Die Runde wird neu gestartet, macht euch bereit zum Abstimmen."
+		"pt"		"Reiniciando o round, preparem-se para votar."
+		"chi"		"正在重新开始回合，请准备投票。"
+	}
+
+	"Mako Vote Starting In"
+	{
+		"#format"	"{1:d}"
+		"en"		"Starting vote in {1}s"
+		"fr"		"Début du vote dans {1}s"
+		"ru"		"Голосование начнётся через {1} с"
+		"es"		"La votación empieza en {1}s"
+		"de"		"Die Abstimmung beginnt in {1}s"
+		"pt"		"A votação começa em {1}s"
+		"chi"		"投票将在 {1} 秒后开始"
+	}
+
+	"Mako Vote In Progress"
+	{
+		"en"		"Another vote is currently in progress, retrying in 3s."
+		"fr"		"Un autre vote est en cours, nouvel essai dans 3s."
+		"ru"		"Сейчас идёт другое голосование, повтор через 3 с."
+		"es"		"Hay otra votación en curso, se reintentará en 3s."
+		"de"		"Eine andere Abstimmung läuft gerade, neuer Versuch in 3s."
+		"pt"		"Outra votação está em andamento, tentando novamente em 3s."
+		"chi"		"当前有其他投票正在进行，3 秒后重试。"
+	}
+
+	"Mako Vote Title"
+	{
+		"en"		"What stage to play next?"
+		"fr"		"Quel stage jouer ensuite ?"
+		"ru"		"Какой этап играть следующим?"
+		"es"		"¿Qué stage jugar a continuación?"
+		"de"		"Welche Stage soll als Nächstes gespielt werden?"
+		"pt"		"Qual stage jogar a seguir?"
+		"chi"		"下一个要玩哪个关卡？"
+	}
+
+	"Mako Revote Needed"
+	{
+		"en"		"A revote is needed!"
+		"fr"		"Un nouveau vote est nécessaire !"
+		"ru"		"Требуется повторное голосование!"
+		"es"		"¡Se necesita una nueva votación!"
+		"de"		"Eine erneute Abstimmung ist nötig!"
+		"pt"		"É necessária uma nova votação!"
+		"chi"		"需要重新投票！"
+	}
+
+	"Mako Vote Finished"
+	{
+		"#format"	"{1:s},{2:d},{3:d}"
+		"en"		"Vote finished! Winner: {red}{1}{white} with {2}%% of {3} votes!"
+		"fr"		"Vote terminé ! Gagnant : {red}{1}{white} avec {2}%% des {3} votes !"
+		"ru"		"Голосование завершено! Победитель: {red}{1}{white} — {2}%% голосов (всего голосов: {3})!"
+		"es"		"¡Votación terminada! Ganador: {red}{1}{white} con el {2}%% de {3} votos."
+		"de"		"Abstimmung beendet! Gewinner: {red}{1}{white} mit {2}%% von {3} Stimmen!"
+		"pt"		"Votação encerrada! Vencedor: {red}{1}{white} com {2}%% de {3} votos!"
+		"chi"		"投票结束！获胜者：{red}{1}{white}，获得 {3} 票中的 {2}%%！"
+	}
+}
