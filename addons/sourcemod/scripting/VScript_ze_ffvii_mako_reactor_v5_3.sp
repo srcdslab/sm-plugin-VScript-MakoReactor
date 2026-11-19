@@ -22,7 +22,7 @@ public Plugin myinfo =
 	name        = "VScript_ze_ffvii_mako_reactor_v5_3",
 	author	    = "Neon, maxime1907, .Rushaway, Zombieden, zaCade",
 	description = "VScript related to the Stripper + MakoVote",
-	version     = "2.2.3",
+	version     = "2.2.4",
 	url         = "https://github.com/Rushaway/sm-plugin-VScript-MakoReactor"
 }
 
