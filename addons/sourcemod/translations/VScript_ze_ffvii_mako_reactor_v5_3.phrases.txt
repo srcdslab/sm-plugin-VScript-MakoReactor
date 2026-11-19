@@ -9,6 +9,12 @@
 		"de"		"ZM wurde noch nicht gespielt. Es wird gewürfelt..."
 		"pt"		"O ZM ainda não foi jogado. Rolando os dados..."
 		"chi"		"ZM 模式尚未进行过。正在掷骰子……"
+		"pl"		"ZM jeszcze nie był grany. Rzucam kośćmi..."
+		"tr"		"ZM henüz oynanmadı. Zarlar atılıyor..."
+		"it"		"ZM non è ancora stato giocato. Lancio i dadi..."
+		"ua"		"ZM ще не грали. Кидаємо кубики..."
+		"zho"		"ZM 尚未進行過。正在擲骰子……"
+		"cze"		"ZM ještě nebyl hrán. Hážu kostkou..."
 	}
 
 	"Mako RTD Result ZM"
@@ -20,6 +26,12 @@
 		"de"		"Ergebnis: ZM, die Runde wird neu gestartet."
 		"pt"		"Resultado: ZM, reiniciando o round."
 		"chi"		"结果：ZM，正在重新开始回合。"
+		"pl"		"Wynik: ZM, restart rundy."
+		"tr"		"Sonuç: ZM, raund yeniden başlatılıyor."
+		"it"		"Risultato: ZM, riavvio del round."
+		"ua"		"Результат: ZM, перезапуск раунду."
+		"zho"		"結果：ZM，正在重新開始回合。"
+		"cze"		"Výsledek: ZM, restartuji kolo."
 	}
 
 	"Mako RTD Result Normal"
@@ -31,6 +43,12 @@
 		"de"		"Ergebnis: normale Mako-Abstimmung"
 		"pt"		"Resultado: votação Mako normal"
 		"chi"		"结果：普通 Mako 投票"
+		"pl"		"Wynik: zwykłe głosowanie Mako"
+		"tr"		"Sonuç: Normal Mako oylaması"
+		"it"		"Risultato: votazione Mako normale"
+		"ua"		"Результат: звичайне голосування Mako"
+		"zho"		"結果：一般 Mako 投票"
+		"cze"		"Výsledek: běžné hlasování Mako"
 	}
 
 	"Mako ZM Already Played"
@@ -42,6 +60,12 @@
 		"de"		"ZM wurde bereits gespielt. Die normale Abstimmung beginnt."
 		"pt"		"O ZM já foi jogado. Iniciando a votação normal."
 		"chi"		"ZM 模式已经进行过。开始普通投票。"
+		"pl"		"ZM był już grany. Rozpoczynam zwykłe głosowanie."
+		"tr"		"ZM zaten oynandı. Normal oylama başlatılıyor."
+		"it"		"ZM è già stato giocato. Avvio della votazione normale."
+		"ua"		"ZM вже грали. Починаємо звичайне голосування."
+		"zho"		"ZM 已經進行過。開始一般投票。"
+		"cze"		"ZM už byl hrán. Spouštím běžné hlasování."
 	}
 
 	"Mako Vote Initiated"
@@ -54,6 +78,12 @@
 		"de"		"{cyan}{1} {white}hat eine Mako-Abstimmungsrunde gestartet (in {2} Sekunden)"
 		"pt"		"{cyan}{1} {white}iniciou um round de votação Mako (em {2} segundos)"
 		"chi"		"{cyan}{1} {white}发起了 Mako 投票回合（{2} 秒后）"
+		"pl"		"{cyan}{1} {white}rozpoczął rundę głosowania Mako (za {2} sek.)"
+		"tr"		"{cyan}{1} {white} bir Mako oylama turu başlattı ({2} saniye içinde)"
+		"it"		"{cyan}{1} {white}ha avviato un round di votazione Mako (tra {2} secondi)"
+		"ua"		"{cyan}{1} {white}розпочав раунд голосування Mako (через {2} с.)"
+		"zho"		"{cyan}{1} {white}發起了 Mako 投票回合（{2} 秒後）"
+		"cze"		"{cyan}{1} {white}zahájil kolo hlasování Mako (za {2} s)"
 	}
 
 	"Mako Vote Initiated Server"
@@ -65,6 +95,12 @@
 		"de"		"{cyan}Der Server {white}hat eine Mako-Abstimmungsrunde gestartet (nächste Runde)"
 		"pt"		"{cyan}O servidor {white}iniciou um round de votação Mako (no próximo round)"
 		"chi"		"{cyan}服务器{white}发起了 Mako 投票回合（下一回合）"
+		"pl"		"{cyan}Serwer {white}rozpoczął rundę głosowania Mako (następna runda)"
+		"tr"		"{cyan}Sunucu {white}bir Mako oylama turu başlattı (sonraki raund)"
+		"it"		"{cyan}Il server {white}ha avviato un round di votazione Mako (round successivo)"
+		"ua"		"{cyan}Сервер {white}розпочав раунд голосування Mako (наступний раунд)"
+		"zho"		"{cyan}伺服器{white}發起了 Mako 投票回合（下一回合）"
+		"cze"		"{cyan}Server {white}zahájil kolo hlasování Mako (příští kolo)"
 	}
 
 	"Mako Restarting Round"
@@ -76,6 +112,12 @@
 		"de"		"Die Runde wird neu gestartet, macht euch bereit zum Abstimmen."
 		"pt"		"Reiniciando o round, preparem-se para votar."
 		"chi"		"正在重新开始回合，请准备投票。"
+		"pl"		"Restart rundy, przygotuj się do głosowania."
+		"tr"		"Raund yeniden başlatılıyor, oy vermeye hazır ol."
+		"it"		"Riavvio del round, preparatevi a votare."
+		"ua"		"Перезапуск раунду, готуйтеся голосувати."
+		"zho"		"正在重新開始回合，請準備投票。"
+		"cze"		"Restartuji kolo, připravte se na hlasování."
 	}
 
 	"Mako Vote Starting In"
@@ -88,6 +130,12 @@
 		"de"		"Die Abstimmung beginnt in {1}s"
 		"pt"		"A votação começa em {1}s"
 		"chi"		"投票将在 {1} 秒后开始"
+		"pl"		"Głosowanie rozpocznie się za {1} s"
+		"tr"		"Oylama {1} sn içinde başlıyor"
+		"it"		"La votazione inizia tra {1}s"
+		"ua"		"Голосування розпочнеться через {1} с"
+		"zho"		"投票將在 {1} 秒後開始"
+		"cze"		"Hlasování začne za {1} s"
 	}
 
 	"Mako Vote In Progress"
@@ -99,6 +147,12 @@
 		"de"		"Eine andere Abstimmung läuft gerade, neuer Versuch in 3s."
 		"pt"		"Outra votação está em andamento, tentando novamente em 3s."
 		"chi"		"当前有其他投票正在进行，3 秒后重试。"
+		"pl"		"Trwa już inne głosowanie, ponowna próba za 3 s."
+		"tr"		"Şu anda başka bir oylama sürüyor, 3 sn içinde tekrar denenecek."
+		"it"		"È già in corso un'altra votazione, nuovo tentativo tra 3s."
+		"ua"		"Зараз триває інше голосування, повторна спроба через 3 с."
+		"zho"		"目前正在進行另一項投票，3 秒後重試。"
+		"cze"		"Právě probíhá jiné hlasování, zkusím to znovu za 3 s."
 	}
 
 	"Mako Vote Title"
@@ -110,6 +164,12 @@
 		"de"		"Welche Stage soll als Nächstes gespielt werden?"
 		"pt"		"Qual stage jogar a seguir?"
 		"chi"		"下一个要玩哪个关卡？"
+		"pl"		"Który etap zagrać następny?"
+		"tr"		"Sıradaki aşama hangisi olsun?"
+		"it"		"Quale stage giocare dopo?"
+		"ua"		"Який етап грати далі?"
+		"zho"		"下一個要玩哪個關卡？"
+		"cze"		"Kterou fázi hrát příště?"
 	}
 
 	"Mako Revote Needed"
@@ -121,6 +181,12 @@
 		"de"		"Eine erneute Abstimmung ist nötig!"
 		"pt"		"É necessária uma nova votação!"
 		"chi"		"需要重新投票！"
+		"pl"		"Potrzebne jest ponowne głosowanie!"
+		"tr"		"Yeniden oylama gerekiyor!"
+		"it"		"È necessaria una nuova votazione!"
+		"ua"		"Потрібне повторне голосування!"
+		"zho"		"需要重新投票！"
+		"cze"		"Je potřeba opakovat hlasování!"
 	}
 
 	"Mako Vote Finished"
@@ -133,5 +199,11 @@
 		"de"		"Abstimmung beendet! Gewinner: {red}{1}{white} mit {2}%% von {3} Stimmen!"
 		"pt"		"Votação encerrada! Vencedor: {red}{1}{white} com {2}%% de {3} votos!"
 		"chi"		"投票结束！获胜者：{red}{1}{white}，获得 {3} 票中的 {2}%%！"
+		"pl"		"Głosowanie zakończone! Zwycięzca: {red}{1}{white} z {2}%% z {3} głosów!"
+		"tr"		"Oylama bitti! Kazanan: {red}{1}{white}, {3} oyun %%{2} oranıyla!"
+		"it"		"Votazione terminata! Vincitore: {red}{1}{white} con il {2}%% di {3} voti!"
+		"ua"		"Голосування завершено! Переможець: {red}{1}{white} із {2}%% з {3} голосів!"
+		"zho"		"投票結束！獲勝者：{red}{1}{white}，在 {3} 票中佔 {2}%%！"
+		"cze"		"Hlasování skončilo! Vítěz: {red}{1}{white} s {2}%% z {3} hlasů!"
 	}
 }
